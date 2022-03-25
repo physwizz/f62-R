@@ -1327,8 +1327,8 @@ static int __init cpufreq_read_cpu_min_c1(char *cpu_min_c1) /*integer remains in
 }
 __setup("cpu_min_c1=", cpufreq_read_cpu_min_c1);
 
-/*Underclocking big cores to 350MHz*/
-unsigned long arg_cpu_min_c2 = 350000; 
+/*Underclocking big cores to 377MHz*/
+unsigned long arg_cpu_min_c2 = 377000; 
 
 static __init int cpufreq_read_cpu_min_c2(char *cpu_min_c2)
 {
@@ -1346,9 +1346,30 @@ static __init int cpufreq_read_cpu_min_c2(char *cpu_min_c2)
 __setup("cpu_min_c2=", cpufreq_read_cpu_min_c2);
 
 
+
+/*Underclocking prime cores to 350MHz*/
+unsigned long arg_cpu_min_c3 = 350000; 
+
+static __init int cpufreq_read_cpu_min_c3(char *cpu_min_c3)
+{
+	unsigned long ui_khz;
+	int ret;
+
+	ret = kstrtoul(cpu_min_c3, 0, &ui_khz);
+	if (ret)
+		return -EINVAL;
+
+	arg_cpu_min_c3 = ui_khz;
+	printk("cpu_min_c3=%lu\n", arg_cpu_min_c3);
+	return ret;
+}
+__setup("cpu_min_c3=", cpufreq_read_cpu_min_c3);
+
+
+
 /*Chatur, Carlos Burero & physwizz*/
-/*Overclocking little cores to 2.1GHz*/
-static unsigned long arg_cpu_max_c1 = 1950000; /*max_cpu_freq=2.1 GHz for little cores*/
+/*Overclocking little cores to 1.95GHz*/
+static unsigned long arg_cpu_max_c1 = 1950000; /*max_cpu_freq= 1.95GHz for little cores*/
 
 static int __init cpufreq_read_cpu_max_c1(char *cpu_max_c1) /*integer remains in memory after function call*/
 {
@@ -1365,8 +1386,8 @@ static int __init cpufreq_read_cpu_max_c1(char *cpu_max_c1) /*integer remains in
 }
 __setup("cpu_max_c1=", cpufreq_read_cpu_max_c1);
 
-/*Overclocking big cores to 2.6GHz*/
-unsigned long arg_cpu_max_c2 = 2600000; /*max_cpu_freq=2.6 GHz*/
+/*Overclocking big cores to 2.4GHz*/
+unsigned long arg_cpu_max_c2 = 2400000; /*max_cpu_freq=2.4 GHz*/
 
 static __init int cpufreq_read_cpu_max_c2(char *cpu_max_c2)
 {
@@ -1382,6 +1403,25 @@ static __init int cpufreq_read_cpu_max_c2(char *cpu_max_c2)
 	return ret;
 }
 __setup("cpu_max_c2=", cpufreq_read_cpu_max_c2);
+
+
+/*Overclocking prime cores to 3.5GHz*/
+unsigned long arg_cpu_max_c3 = 3500000; /*max_cpu_freq=3.5 GHz*/
+
+static __init int cpufreq_read_cpu_max_c3(char *cpu_max_c3)
+{
+	unsigned long ui_khz;
+	int ret;
+
+	ret = kstrtoul(cpu_max_c3, 0, &ui_khz);
+	if (ret)
+		return -EINVAL;
+
+	arg_cpu_max_c3 = ui_khz;
+	printk("cpu_max_c3=%lu\n", arg_cpu_max_c3);
+	return ret;
+}
+__setup("cpu_max_c3=", cpufreq_read_cpu_max_c3);
 
 
 
@@ -1412,7 +1452,7 @@ static __init int init_domain(struct exynos_cpufreq_domain *domain,
 		domain->min_freq = max(domain->min_freq, val);
 
 
- /*id==0 for little  id==1 for big*/
+ /*id==0 for little  id==1 for big id==2 for prime*/
 
 	if (domain->id == 0) {
 		domain->max_freq = arg_cpu_max_c1;
@@ -1420,7 +1460,11 @@ static __init int init_domain(struct exynos_cpufreq_domain *domain,
 	} else if (domain->id == 1) {
 		domain->max_freq = arg_cpu_max_c2;
 		domain->min_freq = arg_cpu_min_c2;
+	} else if (domain->id == 2) {
+		domain->max_freq = arg_cpu_max_c3;
+		domain->min_freq = arg_cpu_min_c3;
 	}
+
 
 	/* Default QoS for user */
 	//if (!of_property_read_u32(dn, "user-default-qos", &val))
